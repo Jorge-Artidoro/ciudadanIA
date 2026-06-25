@@ -1,0 +1,2 @@
+# ciudadanIA
+proyecto: TECNOLOGIA Y MODELOS DIDACTICOS.
