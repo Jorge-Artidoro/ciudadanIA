@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CiudadanIA - Arquitectura Didáctica</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            /* Paleta principal */
+            --c-blue: #2FA4E7;      
+            --c-black: #17191D;     
+            --c-gray-text: #1D1D1F;
+            --c-purple: #6B5CA5;    
+            --c-orange: #F2B36D;    
+            --c-turquoise: #83DCCB; 
+            --c-bg: #F7F8FA;        
+            
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            background-color: var(--c-bg);
+            color: var(--c-gray-text);
+        }
+
+        /* Fondo general con el Logo agrandado - URL codificada para evitar errores de espacios/paréntesis */
+        .bg-image {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2;
+            background-image: url('Logo_CiudadanIA.png');
+            background-size: 140%;
+            background-position: center 30%; 
+            background-repeat: no-repeat;
+            background-color: #ffffff;
+            transition: background-size 0.5s ease;
+        }
+
+        /* Overlay ajustado para permitir ver la foto con claridad pero poder leer */
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background-color: rgba(247, 248, 250, 0.55); 
+            backdrop-filter: blur(5px); 
+        }
+
+        .main-container {
+            position: relative; z-index: 10;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            padding: 2vh 4vw; gap: 2vh;
+        }
+
+        /* BARRA SUPERIOR */
+        .top-nav {
+            width: 100%; flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 10px 20px;
+            display: flex; justify-content: center; align-items: center; gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .menu-btn {
+            background: transparent; color: var(--c-black);
+            font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 11px;
+            padding: 6px 12px; text-align: center;
+            transition: all 0.3s ease; cursor: pointer; border: none; border-radius: 6px;
+            letter-spacing: 0.5px; font-weight: 600;
+        }
+        .menu-btn:hover { background: rgba(47, 164, 231, 0.1); color: var(--c-blue); }
+        .menu-btn.active { background: var(--c-blue); color: #ffffff; box-shadow: 0 4px 10px rgba(47, 164, 231, 0.3);}
+
+        .slides-panel {
+            width: 100%; flex-grow: 1; height: 0;
+            overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth;
+            border-radius: 12px;
+        }
+
+        .slides-panel::-webkit-scrollbar { width: 6px; }
+        .slides-panel::-webkit-scrollbar-thumb { background: var(--c-blue); border-radius: 10px; }
+
+        .slide {
+            width: 100%; min-height: 100%; 
+            scroll-snap-align: start; padding: 2rem 4rem;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative;
+        }
+
+        .slide-header {
+            font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 700;
+            color: var(--c-black); text-transform: uppercase; margin-bottom: 2rem;
+            text-align: center; border-bottom: 3px solid var(--c-blue); padding-bottom: 5px;
+            width: 100%; max-width: 1000px;
+            background: rgba(255,255,255,0.6); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(5px);
+        }
+
+        /* CLASE REUTILIZABLE: GLASS CARDS E INTERFAZ ACADÉMICA DOCTORAL */
+        .glass-card, .doctoral-card {
+            background: #FFFFFF;
+            border: 1px solid rgba(23, 25, 29, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(23, 25, 29, 0.07);
+            transition: all 280ms cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card:hover, .doctoral-card:hover {
+            transform: translateY(-6px) scale(1.015);
+            box-shadow: 0 24px 55px rgba(23, 25, 29, 0.12);
+        }
+
+        /* PALETA ELEGANTE DE NEGROS Y GRAFITOS (PARA SLIDES EXCEPTO PORTADA/INTEGRACIÓN EXPANDIDA) */
+        .slide:not(#slide-0) .glass-card,
+        .slide:not(#slide-0) .doctoral-card,
+        .slide:not(#slide-0) .glass-bw-card {
+            background: #1E1F22 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35) !important;
+            color: #E2E8F0 !important;
+        }
+        .slide:not(#slide-0) .glass-card:hover,
+        .slide:not(#slide-0) .doctoral-card:hover,
+        .slide:not(#slide-0) .glass-bw-card:hover {
+            box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Forzar textos legibles en modo oscuro dentro de tarjetas */
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card h4,
+        .slide:not(#slide-0):not(#slide-4) .glass-card h4,
+        .slide:not(#slide-0):not(#slide-4) .glass-bw-card h4,
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card .font-bold,
+        .slide:not(#slide-0):not(#slide-4) .glass-card .font-bold,
+        .slide:not(#slide-0):not(#slide-4) .glass-bw-card .font-bold,
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card p.font-bold,
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card span.font-bold,
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card div.font-bold {
+            color: #FFFFFF !important;
+        }
+        
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card p,
+        .slide:not(#slide-0):not(#slide-4) .glass-card p,
+        .slide:not(#slide-0):not(#slide-4) .glass-bw-card p,
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card li,
+        .slide:not(#slide-0):not(#slide-4) .glass-card li,
+        .slide:not(#slide-0):not(#slide-4) .glass-bw-card li,
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card span,
+        .slide:not(#slide-0):not(#slide-4) .glass-card span,
+        .slide:not(#slide-0):not(#slide-4) .glass-bw-card span,
+        .slide:not(#slide-0):not(#slide-4) .doctoral-card div:not(.font-bold) {
+            color: #94A3B8 !important;
+        }
+
+        /* Líneas de acento finas neutralizadas (solo gris) */
+        .accent-line-top {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background-color: #404044 !important;
+            z-index: 10;
+        }
+        .accent-line-left {
+            position: absolute;
+            top: 0; bottom: 0; left: 0;
+            width: 4px;
+            background-color: #404044 !important;
+            z-index: 10;
+        }
+
+        /* Temas Semánticos redefinidos a Grafito con Iconos de Color */
+        .theme-riesgo { background-color: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.08) !important; }
+        .theme-riesgo i, .theme-riesgo .accent-color { color: #EF4444 !important; } /* Rojo */
+        .theme-riesgo .accent-bg { background-color: #EF4444 !important; }
+
+        .theme-solucion { background-color: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.08) !important; }
+        .theme-solucion i, .theme-solucion .accent-color { color: #22C55E !important; } /* Verde */
+        .theme-solucion .accent-bg { background-color: #22C55E !important; }
+
+        .theme-tecnologia { background-color: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.08) !important; }
+        .theme-tecnologia i, .theme-tecnologia .accent-color { color: #3B82F6 !important; } /* Azul */
+        .theme-tecnologia .accent-bg { background-color: #3B82F6 !important; }
+
+        .theme-friccion { background-color: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.08) !important; }
+        .theme-friccion i, .theme-friccion .accent-color { color: #A3E635 !important; } /* Verde Limón */
+        .theme-friccion .accent-bg { background-color: #A3E635 !important; }
+
+        .theme-metacognicion { background-color: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.08) !important; }
+        .theme-metacognicion i, .theme-metacognicion .accent-color { color: #A3E635 !important; } /* Verde Limón */
+        .theme-metacognicion .accent-bg { background-color: #A3E635 !important; }
+
+        .theme-teoria { background-color: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.08) !important; }
+        .theme-teoria i, .theme-teoria .accent-color { color: #A3E635 !important; } /* Verde Limón */
+        .theme-teoria .accent-bg { background-color: #A3E635 !important; }
+
+        /* FICHAS MOTOR DIDÁCTICO */
+        .glass-bw-card {
+            background: #FFFFFF;
+            border: 1px solid rgba(23, 25, 29, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(23, 25, 29, 0.07);
+            transition: all 280ms cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-bw-card:hover {
+            transform: translateY(-6px) scale(1.015);
+            box-shadow: 0 24px 55px rgba(23, 25, 29, 0.12);
+            border-color: rgba(23, 25, 29, 0.15);
+        }
+        .icon-glass-circle {
+            background: #2D2E32 !important;
+            border: 1.5px solid currentColor !important;
+            backdrop-filter: blur(10px) !important;
+            transition: transform 0.4s ease;
+        }
+        .glass-bw-card:hover .icon-glass-circle {
+            transform: scale(1.12);
+        }
+        .bw-label {
+            background: #2D2E32 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: #E2E8F0 !important;
+        }
+
+        /* Badges / etiquetas de los temas en modo oscuro */
+        .slide:not(#slide-0) .bg-\[\#FDECEC\],
+        .slide:not(#slide-0) .bg-\[\#EAF8EF\],
+        .slide:not(#slide-0) .bg-\[\#EAF6FD\],
+        .slide:not(#slide-0) .bg-\[\#FFF3E4\],
+        .slide:not(#slide-0) .bg-\[\#EAFBF7\],
+        .slide:not(#slide-0) .bg-\[\#F1EEFA\] {
+            background-color: #2D2E32 !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        
+        .slide:not(#slide-0) .text-\[\#D94141\] { color: #FFFFFF !important; }
+        .slide:not(#slide-0) .text-\[\#22A55A\] { color: #FFFFFF !important; }
+        .slide:not(#slide-0) .text-\[\#2FA4E7\] { color: #FFFFFF !important; }
+        
+        .slide:not(#slide-0) i.text-\[\#D94141\] { color: #EF4444 !important; }
+        .slide:not(#slide-0) i.text-\[\#2FA4E7\] { color: #3B82F6 !important; }
+        .slide:not(#slide-0) i.text-green-500 { color: #22C55E !important; }
+        .slide:not(#slide-0) i.text-\#D94141 { color: #EF4444 !important; }
+        
+        /* Neutralizar marcadores de listas */
+        .doctoral-card li::marker {
+            color: #94A3B8 !important;
+        }
+        
+        /* Neutralizar diagramas y bordes internos */
+        .doctoral-card .border-b, .doctoral-card .border-t, .doctoral-card .border {
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* Neutralizar líneas de flujo del bucle cíclico */
+        .flow-line {
+            stroke: #64748B !important;
+        }
+        svg marker path {
+            fill: #64748B !important;
+        }
+        #slide-6 .absolute.top-1/2.left-1/2.bg-white {
+            background-color: #1E1F22 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            color: #94A3B8 !important;
+        }
+        #slide-6 .absolute.top-1/2.left-1/2.bg-white div {
+            color: #FFFFFF !important;
+        }
+        #slide-6 .absolute.top-1/2.left-1/2.bg-white i {
+            color: #3B82F6 !important;
+        }
+
+        /* Central Node en Slide 7 */
+        #slide-7 .absolute.z-10.w-44.h-44.bg-white {
+            background-color: #1E1F22 !important;
+            border-color: #3B82F6 !important;
+            color: #FFFFFF !important;
+        }
+        #slide-7 .absolute.z-10.w-44.h-44.bg-white span {
+            color: #FFFFFF !important;
+        }
+        #slide-7 .absolute.z-10.w-44.h-44.bg-white i {
+            color: #3B82F6 !important;
+        }
+        #slide-7 .absolute.h-px, #slide-7 .absolute.w-px {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Tarjeta sin tema de Slide 9 */
+        .doctoral-card.bg-\[\#FAFBFC\] {
+            background-color: #1E1F22 !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .doctoral-card.bg-\[\#FAFBFC\] i {
+            color: #94A3B8 !important; /* Icono neutral */
+        }
+
+        /* --- Slide 9: Limitaciones y Resguardos --- */
+        .limitations-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        @media (max-width: 1024px) {
+            .limitations-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .limitations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .limitation-hotspot {
+            position: relative;
+            min-height: 100px;
+            cursor: pointer;
+        }
+
+        .limitation-card {
+            opacity: 0;
+            transform: translateY(18px) scale(0.96);
+            pointer-events: none;
+            transition:
+                opacity 280ms ease,
+                transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 280ms ease;
+            width: 100%;
+            height: 100%;
+        }
+
+        .limitation-icon {
+            transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Hover and active states */
+        .limitation-hotspot:hover .limitation-card,
+        .limitation-hotspot.is-active .limitation-card {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45) !important;
+        }
+
+        .limitation-hotspot:hover .limitation-icon,
+        .limitation-hotspot.is-active .limitation-icon {
+            transform: scale(1.08);
+        }
+
+        /* PIE DE PÁGINA */
+        .bottom-footer {
+            width: 100%; flex-shrink: 0;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.85); padding: 10px 20px; border-radius: 12px;
+            border: 1px solid var(--glass-border); backdrop-filter: blur(12px);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.02);
+        }
+
+        .footer-text { font-size: 11px; color: var(--c-black); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .icons-row { display: flex; gap: 10px; }
+        .icon-circle {
+            width: 35px; height: 35px; border-radius: 50%;
+            background: var(--c-blue); color: #ffffff;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 14px; transition: 0.3s; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(47, 164, 231, 0.3);
+            text-decoration: none;
+        }
+        .icon-circle:hover { transform: scale(1.15); background: var(--c-black); }
+
+        /* Capas 3D - Integración Tecnológica */
+        .s4-perspective-container {
+            position: relative; width: 100%; max-width: 1000px; height: 260px; 
+            margin: 0 auto; perspective: 1200px;
+        }
+        
+        .stack-card {
+            position: absolute; width: 200px; height: 120px;
+            left: 50%; bottom: 40px; margin-left: -100px;
+            background: #FFFFFF;
+            border: 1px solid rgba(23, 25, 29, 0.08); border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 0.7s cubic-bezier(0.34, 1.15, 0.64, 1); cursor: pointer;
+            box-shadow: 0 10px 25px rgba(23, 25, 29, 0.05);
+            text-align: center; padding: 15px; transform-style: preserve-3d;
+            transform-origin: center center;
+        }
+        
+        /* 5 Capas Isométricas */
+        #c-tpack.stacked { transform: rotateX(60deg) rotateZ(-45deg) translateZ(0px) translate(-30px, 30px); border-color: #6B5CA5; z-index: 1;}
+        #c-itpack.stacked { transform: rotateX(60deg) rotateZ(-45deg) translateZ(40px) translate(-10px, 10px); border-color: #2FA4E7; z-index: 2;}
+        #c-samr.stacked { transform: rotateX(60deg) rotateZ(-45deg) translateZ(80px) translate(10px, -10px); border-color: #F2B36D; z-index: 3;}
+        #c-picrat.stacked { transform: rotateX(60deg) rotateZ(-45deg) translateZ(120px) translate(30px, -30px); border-color: #83DCCB; z-index: 4;}
+        #c-assure.stacked { transform: rotateX(60deg) rotateZ(-45deg) translateZ(160px) translate(50px, -50px); border-color: #64748B; z-index: 5;}
+
+        /* Hover para tarjetas no seleccionadas en el stack - Desplazamientos sutiles de +15px para evitar loops */
+        #c-tpack.stacked:hover { transform: rotateX(60deg) rotateZ(-45deg) translateZ(15px) translate(-30px, 30px) !important; opacity: 1 !important; }
+        #c-itpack.stacked:hover { transform: rotateX(60deg) rotateZ(-45deg) translateZ(55px) translate(-10px, 10px) !important; opacity: 1 !important; }
+        #c-samr.stacked:hover { transform: rotateX(60deg) rotateZ(-45deg) translateZ(95px) translate(10px, -10px) !important; opacity: 1 !important; }
+        #c-picrat.stacked:hover { transform: rotateX(60deg) rotateZ(-45deg) translateZ(135px) translate(30px, -30px) !important; opacity: 1 !important; }
+        #c-assure.stacked:hover { transform: rotateX(60deg) rotateZ(-45deg) translateZ(175px) translate(50px, -50px) !important; opacity: 1 !important; }
+
+        /* Contenedores de la sección de integración */
+        .expanded-zone {
+            width: 100%;
+            max-width: 1100px;
+            min-height: 160px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 10px;
+            margin-bottom: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .stack-zone {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        /* Estilos de tarjetas expandidas en la zona superior (Restaurado a fondos sólidos) */
+        .stack-card.is-expanded {
+            position: relative;
+            left: auto; bottom: auto; margin-left: 0;
+            transform: scale(1.2) !important;
+            cursor: default;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14) !important;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.6s, color 0.6s, box-shadow 0.6s, border-color 0.6s;
+            opacity: 1 !important;
+            filter: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 20px !important;
+        }
+        
+        #c-tpack.is-expanded {
+            background-color: var(--c-blue) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 12px 30px rgba(47, 164, 231, 0.4) !important;
+        }
+        #c-tpack.is-expanded .layer-subtitle {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        #c-tpack.is-expanded .layer-title {
+            color: #ffffff !important;
+        }
+        
+        #c-itpack.is-expanded {
+            background-color: var(--c-purple) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 12px 30px rgba(107, 92, 165, 0.4) !important;
+        }
+        #c-itpack.is-expanded .layer-subtitle {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        #c-itpack.is-expanded .layer-title {
+            color: #ffffff !important;
+        }
+
+        #c-samr.is-expanded {
+            background-color: var(--c-orange) !important;
+            color: var(--c-gray-text) !important;
+            border-color: rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 12px 30px rgba(242, 179, 109, 0.4) !important;
+        }
+        #c-samr.is-expanded .layer-subtitle {
+            color: rgba(0, 0, 0, 0.6) !important;
+        }
+        #c-samr.is-expanded .layer-title {
+            color: var(--c-gray-text) !important;
+        }
+
+        #c-picrat.is-expanded {
+            background-color: var(--c-turquoise) !important;
+            color: var(--c-gray-text) !important;
+            border-color: rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 12px 30px rgba(131, 220, 203, 0.4) !important;
+        }
+        #c-picrat.is-expanded .layer-subtitle {
+            color: rgba(0, 0, 0, 0.6) !important;
+        }
+        #c-picrat.is-expanded .layer-title {
+            color: var(--c-gray-text) !important;
+        }
+
+        #c-assure.is-expanded {
+            background-color: var(--c-black) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 12px 30px rgba(23, 25, 29, 0.4) !important;
+        }
+        #c-assure.is-expanded .layer-subtitle {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        #c-assure.is-expanded .layer-title {
+            color: #ffffff !important;
+        }
+
+        .layer-title { font-family: 'Oswald', sans-serif; font-size: 22px; letter-spacing: 1px;}
+        .layer-subtitle { font-size: 10px; font-weight: 700; text-transform: uppercase; opacity: 0.8; margin-top: 2px;}
+        .layer-phrase { max-height: 0; opacity: 0; overflow: hidden; transition: 0.5s; font-size: 11px; font-weight: 600; margin-top: 0; line-height: 1.3;}
+
+        /* Bucle Cíclico Flechas */
+        .flow-line { stroke-dasharray: 8 8; animation: flow-anim 0.8s linear infinite; transition: stroke-width 0.3s, opacity 0.3s; opacity: 0.8;}
+        @keyframes flow-anim { to { stroke-dashoffset: -16; } }
+
+        /* CARRUSEL APORTE ORIGINAL */
+        .aporte-carousel-wrapper {
+            position: relative; width: 100%; max-width: 1000px; height: 420px; 
+            margin: 0 auto; display: flex; align-items: center; justify-content: center;
+            perspective: 1500px; overflow: hidden; padding: 20px 0;
+        }
+        .aporte-card {
+            position: absolute; width: 240px; height: 320px;
+            background: #1E1F22 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-top: 4px solid #404044 !important;
+            border-radius: 24px; padding: 2rem;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-style: preserve-3d; box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+            cursor: pointer;
+            color: #E2E8F0 !important;
+        }
+        .aporte-card .icon-c { font-size: 3.5rem; margin-bottom: 15px; color: #94A3B8 !important; transition: color 0.5s;}
+        .aporte-card h4 { font-family: 'Oswald', sans-serif; font-size: 20px; color: #FFFFFF !important; margin-bottom: 10px; transition: color 0.5s;}
+        .aporte-card p { font-size: 13px; color: #94A3B8 !important; line-height: 1.4; opacity: 0; max-height: 0; overflow: hidden; transition: all 0.5s;}
+
+        /* Estados Carrusel */
+        .aporte-card.active { transform: translateZ(120px) scale(1.2); z-index: 10; opacity: 1; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.45); pointer-events: auto;}
+        .aporte-card.active p { opacity: 1; max-height: 150px; margin-top: 10px;}
+        
+        .aporte-card.prev { transform: translateX(-220px) translateZ(-50px) scale(0.8) rotateY(15deg); z-index: 5; opacity: 0.6; pointer-events: auto;}
+        .aporte-card.next { transform: translateX(220px) translateZ(-50px) scale(0.8) rotateY(-15deg); z-index: 5; opacity: 0.6; pointer-events: auto;}
+        
+        .aporte-card.hidden-left { transform: translateX(-350px) translateZ(-150px) scale(0.5); z-index: 1; opacity: 0; pointer-events: none;}
+        .aporte-card.hidden-right { transform: translateX(350px) translateZ(-150px) scale(0.5); z-index: 1; opacity: 0; pointer-events: none;}
+
+        /* Colores Activos Carrusel Modernizados para Evitar Fondos Negros */
+        #ap-1.active { background: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+        #ap-1.active .icon-c { color: #3B82F6 !important; }
+        #ap-1.active h4 { color: #FFFFFF !important; }
+        #ap-1.active p { color: #94A3B8 !important; }
+
+        #ap-2.active { background: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+        #ap-2.active .icon-c { color: #A3E635 !important; }
+        #ap-2.active h4 { color: #FFFFFF !important; }
+        #ap-2.active p { color: #94A3B8 !important; }
+
+        #ap-3.active { background: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+        #ap-3.active .icon-c { color: #A3E635 !important; }
+        #ap-3.active h4 { color: #FFFFFF !important; }
+        #ap-3.active p { color: #94A3B8 !important; }
+
+        #ap-4.active { background: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+        #ap-4.active .icon-c { color: #A3E635 !important; }
+        #ap-4.active h4 { color: #FFFFFF !important; }
+        #ap-4.active p { color: #94A3B8 !important; }
+
+        #ap-5.active { background: #1E1F22 !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+        #ap-5.active .icon-c { color: #22C55E !important; }
+        #ap-5.active h4 { color: #FFFFFF !important; }
+        #ap-5.active p { color: #94A3B8 !important; }
+
+        /* ESTILOS DEL CARRUSEL MOTOR DIDÁCTICO (SLIDE 5) */
+        .motor-carousel-wrapper {
+            position: relative; width: 100%; max-width: 1000px; height: 460px; 
+            margin: 0 auto; display: flex; align-items: center; justify-content: center;
+            perspective: 1500px; overflow: hidden; padding: 20px 0;
+        }
+        
+        .motor-card {
+            position: absolute; width: 220px; height: 340px;
+            background: #1E1F22 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 24px; padding: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-style: preserve-3d; box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+            cursor: pointer;
+            color: #E2E8F0 !important;
+            -webkit-box-reflect: below 6px linear-gradient(transparent 50%, rgba(255, 255, 255, 0.25));
+        }
+
+        /* Reflejo para las tarjetas del Aporte Original también */
+        .aporte-card {
+            -webkit-box-reflect: below 6px linear-gradient(transparent 50%, rgba(255, 255, 255, 0.25));
+        }
+        .aporte-carousel-wrapper {
+            height: 460px !important;
+        }
+
+        /* Estados Carrusel Motor */
+        .motor-card.active { transform: translateZ(120px) scale(1.15); z-index: 10; opacity: 1; pointer-events: auto;}
+        .motor-card.prev { transform: translateX(-190px) translateZ(-40px) scale(0.85) rotateY(15deg); z-index: 5; opacity: 0.75; pointer-events: auto;}
+        .motor-card.next { transform: translateX(190px) translateZ(-40px) scale(0.85) rotateY(-15deg); z-index: 5; opacity: 0.75; pointer-events: auto;}
+        .motor-card.prev-far { transform: translateX(-340px) translateZ(-120px) scale(0.65) rotateY(30deg); z-index: 2; opacity: 0.45; pointer-events: auto;}
+        .motor-card.next-far { transform: translateX(340px) translateZ(-120px) scale(0.65) rotateY(-30deg); z-index: 2; opacity: 0.45; pointer-events: auto;}
+        .motor-card.hidden { transform: translateZ(-200px) scale(0.4); z-index: 1; opacity: 0; pointer-events: none;}
+
+        /* Diseño Epistémico (Solución) en Celeste - Slide 2 */
+        #slide-2 .solution-card {
+            background-color: var(--c-blue) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #FFFFFF !important;
+        }
+        #slide-2 .solution-card,
+        #slide-2 .solution-card div,
+        #slide-2 .solution-card p,
+        #slide-2 .solution-card span {
+            color: #FFFFFF !important;
+        }
+        #slide-2 .solution-card .accent-line-left {
+            background-color: #FFFFFF !important;
+        }
+        #slide-2 .solution-badge {
+            background-color: var(--c-blue) !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        #slide-2 .solution-badge i {
+            color: #FFFFFF !important;
+        }
+
+        /* Estilo responsivo para los carruseles */
+        @media (max-width: 768px) {
+            .motor-carousel-wrapper, .aporte-carousel-wrapper {
+                height: 380px !important;
+            }
+            .motor-card, .aporte-card {
+                width: 170px !important;
+                height: 260px !important;
+                padding: 12px !important;
+            }
+            .motor-card.prev, .aporte-card.prev { transform: translateX(-110px) translateZ(-50px) scale(0.8) !important; }
+            .motor-card.next, .aporte-card.next { transform: translateX(110px) translateZ(-50px) scale(0.8) !important; }
+            .motor-card.prev-far, .aporte-card.hidden-left { display: none !important; }
+            .motor-card.next-far, .aporte-card.hidden-right { display: none !important; }
+        }
+
+        /* Media queries para diseño responsivo */
+        @media (max-width: 1024px) {
+            #slide-6 .flex {
+                flex-direction: column;
+                height: auto;
+                overflow-y: visible;
+                gap: 2rem;
+            }
+            #slide-6 .flex > div {
+                width: 100% !important;
+                max-width: 450px;
+                flex-shrink: 1;
+            }
+            #slide-6 .flex .flex-col {
+                max-height: none;
+                overflow-y: visible;
+            }
+            .slide {
+                padding: 2rem 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body, html {
+                overflow: auto;
+            }
+            .slides-panel {
+                height: auto;
+                overflow-y: visible;
+                scroll-snap-type: none;
+            }
+            .slide {
+                min-height: auto;
+                padding: 3rem 1rem;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+            }
+            .slide-header {
+                font-size: 24px;
+                margin-bottom: 1.5rem;
+            }
+            
+            /* Slide 4 absolute positions adjustment */
+            #s4-container {
+                height: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                perspective: none;
+            }
+            #s4-container .stack-card {
+                position: relative;
+                top: auto; left: auto; right: auto; bottom: auto;
+                width: 100%;
+                max-width: 320px;
+                margin: 0 auto;
+                transform: none !important;
+                opacity: 1 !important;
+            }
+            #s4-container .layer-phrase {
+                max-height: 100px;
+                opacity: 1;
+                margin-top: 8px;
+            }
+            #s4-reset {
+                display: none !important;
+            }
+
+            /* Slide 7 absolute positions adjustment */
+            #slide-7 .relative {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+                height: auto;
+                align-items: center;
+            }
+            #slide-7 .relative .absolute {
+                position: relative;
+                top: auto; left: auto; right: auto; bottom: auto;
+                width: 100%;
+                max-width: 320px;
+                transform: none !important;
+            }
+            #slide-7 .relative svg, #slide-7 .relative .h-px, #slide-7 .relative .w-px {
+                display: none !important;
+            }
+            
+            /* Slide 10 absolute positions adjustment */
+            #slide-10 .relative {
+                margin-top: 2rem;
+            }
+            #slide-10 .absolute.top-1/2 {
+                display: none !important;
+            }
+            #slide-10 .flex.justify-between {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+            }
+            #slide-10 .glass-card {
+                margin-top: 0 !important;
+                width: 100%;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="main-container">
+        
+        <nav class="top-nav" id="main-nav">
+            <button onclick="scrollToSlide('slide-0')" class="menu-btn active">Inicio</button>
+            <button onclick="scrollToSlide('slide-1')" class="menu-btn">El Problema</button>
+            <button onclick="scrollToSlide('slide-2')" class="menu-btn">CiudadanIA</button>
+            <button onclick="scrollToSlide('slide-3')" class="menu-btn">Red Teórica</button>
+            <button onclick="scrollToSlide('slide-4')" class="menu-btn">Integración</button>
+            <button onclick="scrollToSlide('slide-5')" class="menu-btn">Motor Didáctico</button>
+            <button onclick="scrollToSlide('slide-6')" class="menu-btn">Bucle Cíclico</button>
+            <button onclick="scrollToSlide('slide-7')" class="menu-btn">Arq. Técnica</button>
+            <button onclick="scrollToSlide('slide-8')" class="menu-btn">Aporte Original</button>
+            <button onclick="scrollToSlide('slide-9')" class="menu-btn">Limitaciones</button>
+            <button onclick="scrollToSlide('slide-10')" class="menu-btn">Proyección</button>
+        </nav>
+
+        <main class="slides-panel" id="slides-container">
+
+            <!-- SLIDE 0: PORTADA -->
+            <section class="slide" id="slide-0">
+                <div class="glass-card p-4 mb-5" style="width: 70vw; max-width: 1200px; height: 65vh; position: relative; border-radius: 20px;">
+                    <!-- Logo oficial de CiudadanIA cargado desde el workspace local -->
+                    <div style="width: 100%; height: 100%; background-image: url('Logo_CiudadanIA.png'); background-size: contain; background-position: center; background-repeat: no-repeat; border-radius: 16px; background-color: rgba(255,255,255,0.6);"></div>
+                    <div style="position: absolute; bottom: 25px; right: 25px; background: var(--c-black); color: white; padding: 6px 24px; font-family: 'Oswald', sans-serif; font-size: 16px; text-transform: uppercase; border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">Formación Ciudadana</div>
+                </div>
+                <div class="text-center max-w-3xl glass-card p-5" style="background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.1);">
+                    <div class="inline-block">
+                        <p style="font-size: 14px; font-weight: 600; color: #4B5563; line-height: 1.5;">
+                            Mediación socrática con inteligencia artificial generativa para fortalecer<br>
+                            <span class="text-[var(--c-purple)] font-bold">juicio crítico</span>, <span class="text-[var(--c-orange)] font-bold">escritura argumentativa</span> y <span class="text-[var(--c-turquoise)] font-bold">ciudadanía democrática</span>.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 1: PROBLEMA -->
+            <section class="slide" id="slide-1">
+                <div class="slide-header">El Problema Pedagógico</div>
+                
+                <div class="w-full max-w-4xl p-6 mb-8 text-center relative rounded-[24px]" style="background: var(--c-blue) !important; color: #ffffff !important; box-shadow: 0 12px 30px rgba(47, 164, 231, 0.35) !important;">
+                    <p class="text-xl font-bold italic" style="color: #ffffff !important;">
+                        "¿Cómo integrar IA generativa sin sustituir la deliberación, la escritura y la agencia estudiantil?"
+                    </p>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center md:items-start justify-center gap-8 w-full max-w-5xl">
+                    <div class="doctoral-card theme-tecnologia flex-1 p-6 text-left w-full relative">
+                        <div class="accent-line-top bg-[#2FA4E7]"></div>
+                        <div class="font-bold text-lg mb-3 text-center border-b pb-2 text-[#17191D]"><i class="fa-solid fa-book-open text-[#2FA4E7] mr-1"></i> Exigencia Curricular</div>
+                        <ul class="text-sm space-y-3 font-semibold text-[#4B5563]">
+                            <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Educación Ciudadana</li>
+                            <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Consejo de Curso / Jefatura</li>
+                            <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Lengua y Literatura</li>
+                            <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Ciudadanía digital y escritura argumentativa</li>
+                            <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Problemas públicos cercanos a la vida escolar</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="text-center flex-shrink-0 mt-4 md:mt-12 p-4">
+                        <i class="fa-solid fa-bolt text-5xl text-[#D94141] mb-2 drop-shadow-md"></i><br>
+                        <span class="font-bold uppercase text-sm text-[#D94141] bg-[#FDECEC] px-3 py-1 rounded">Vacío Sustitutivo</span>
+                        <div class="text-xs mt-2 text-[#4B5563] max-w-[160px] font-bold bg-[#FDECEC] p-2 rounded">Falsa participación y sesgo automático.</div>
+                    </div>
+
+                    <div class="doctoral-card theme-riesgo flex-1 p-6 text-left w-full relative">
+                        <div class="accent-line-top bg-[#D94141]"></div>
+                        <div class="font-bold text-lg mb-3 text-center border-b pb-2 text-[#17191D]"><i class="fa-solid fa-robot text-[#D94141] mr-1"></i> Riesgo Tecnológico</div>
+                        <div class="text-sm text-[#4B5563] font-semibold leading-relaxed mb-4">
+                            La alta fluidez técnica de la IA permite completar tareas sin esfuerzo intelectual, erosionando el juicio crítico.
+                        </div>
+                        <div class="font-bold text-base mb-2 border-t pt-3 text-white"><i class="fa-solid fa-users-line text-[#EF4444] mr-1"></i> Riesgo Social y Desarrollo</div>
+                        <div class="text-xs text-[#94A3B8] font-semibold leading-relaxed">
+                            Las nuevas generaciones muestran alta susceptibilidad a no tener opinión propia, dificultad para expresar emociones y una disminución en sus habilidades sociales y capacidad cognitiva.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 2: POSICIONAMIENTO -->
+            <section class="slide" id="slide-2">
+                <div class="slide-header">¿Qué es CiudadanIA?</div>
+                
+                <div class="flex flex-col md:flex-row w-full max-w-4xl gap-6 md:gap-10 relative justify-center mt-6 md:mt-10">
+                    <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-300 -translate-x-1/2"></div>
+
+                    <div class="flex-1 flex flex-col gap-4 items-stretch md:items-end text-left md:text-right pr-0 md:pr-6">
+                        <div class="font-bold text-[#D94141] uppercase text-xs mb-2 bg-[#FDECEC] px-3 py-1 rounded-full self-start md:self-auto"><i class="fa-solid fa-xmark mr-1"></i> Riesgo Sustitutivo</div>
+                        <div class="doctoral-card theme-riesgo w-full p-4 text-sm font-semibold relative pl-6 text-[#17191D] md:text-right text-left">
+                            <div class="accent-line-left bg-[#D94141]"></div>
+                            No es un Chatbot resolutivo
+                        </div>
+                        <div class="doctoral-card theme-riesgo w-full p-4 text-sm font-semibold relative pl-6 text-[#17191D] md:text-right text-left">
+                            <div class="accent-line-left bg-[#D94141]"></div>
+                            No es Corrector automático
+                        </div>
+                        <div class="doctoral-card theme-riesgo w-full p-4 text-sm font-semibold relative pl-6 text-[#17191D] md:text-right text-left">
+                            <div class="accent-line-left bg-[#D94141]"></div>
+                            No es Gamificación decorativa
+                        </div>
+                    </div>
+
+                    <div class="flex-1 flex flex-col gap-4 items-stretch md:items-start pl-0 md:pl-6">
+                        <div class="font-bold text-[#22A55A] uppercase text-xs mb-2 bg-[#EAF8EF] px-3 py-1 rounded-full self-start solution-badge"><i class="fa-solid fa-check mr-1"></i> Diseño Epistémico</div>
+                        <div class="doctoral-card theme-solucion solution-card w-full p-4 text-sm font-semibold relative pl-6 text-[#17191D]">
+                            <div class="accent-line-left bg-[#22A55A]"></div>
+                            Arquitectura que exige decidir
+                        </div>
+                        <div class="doctoral-card theme-solucion solution-card w-full p-4 text-sm font-semibold relative pl-6 text-[#17191D]">
+                            <div class="accent-line-left bg-[#22A55A]"></div>
+                            Fricción interrumpe fluidez
+                        </div>
+                        <div class="doctoral-card theme-solucion solution-card w-full p-4 text-sm font-semibold relative pl-6 text-[#17191D]">
+                            <div class="accent-line-left bg-[#22A55A]"></div>
+                            Convierte escritura en evidencia
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 3: RED TEÓRICA -->
+            <section class="slide" id="slide-3">
+                <div class="slide-header">Red de Dependencias Teóricas</div>
+                
+                <div class="w-full max-w-3xl mb-6 md:mb-10 doctoral-card p-6 text-center bg-white relative">
+                    <div class="accent-line-top bg-[#2FA4E7]"></div>
+                    <p class="font-bold text-lg text-[#2FA4E7]">
+                        <i class="fa-solid fa-users mr-2"></i> Dinámica de Roles Integrada
+                    </p>
+                    <p class="text-sm mt-2 font-medium text-[#4B5563] bg-[#EAF6FD] p-2.5 rounded-xl">La IA pregunta y organiza; el estudiante decide; el docente regula.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full max-w-4xl">
+                    
+                    <div class="doctoral-card theme-teoria p-6 text-left relative">
+                        <div class="accent-line-top bg-[#6B5CA5]"></div>
+                        <span class="font-bold text-base uppercase text-[#6B5CA5]"><i class="fa-solid fa-hands-holding-child"></i> Socioconstructivismo</span><br>
+                        <span class="text-xs text-[#4B5563] mt-2 block leading-relaxed font-semibold">
+                            <b>Vygotsky:</b> mediación y zona de desarrollo próximo. La IA opera como <i>otro mediador</i>, no como reemplazo docente.
+                        </span>
+                    </div>
+                    
+                    <div class="doctoral-card theme-tecnologia p-6 text-left relative">
+                        <div class="accent-line-top bg-[#2FA4E7]"></div>
+                        <span class="font-bold text-base uppercase text-[#2FA4E7]"><i class="fa-solid fa-network-wired"></i> Conectivismo</span><br>
+                        <span class="text-xs text-[#4B5563] mt-2 block leading-relaxed font-semibold">
+                            Capacidad de <b>seleccionar, filtrar y vincular nodos</b> de información crítica en entornos digitales complejos.
+                        </span>
+                    </div>
+
+                    <div class="doctoral-card theme-friccion p-6 text-left relative">
+                        <div class="accent-line-top bg-[#F2B36D]"></div>
+                        <span class="font-bold text-base uppercase text-[#F2B36D]"><i class="fa-solid fa-battery-half"></i> Carga Cognitiva</span><br>
+                        <span class="text-xs text-[#4B5563] mt-2 block leading-relaxed font-semibold">
+                            Bajar fricción mecánica (búsqueda) para <b>subir fricción intelectual</b> (argumentación y decisión).
+                        </span>
+                    </div>
+                    
+                    <div class="doctoral-card theme-metacognicion p-6 text-left relative">
+                        <div class="accent-line-top bg-[#83DCCB]"></div>
+                        <span class="font-bold text-base uppercase text-[#83DCCB]"><i class="fa-solid fa-share-nodes"></i> Cognición Distribuida</span><br>
+                        <span class="text-xs text-[#4B5563] mt-2 block leading-relaxed font-semibold">
+                            La tecnología <b>amplifica el pensamiento</b>; el diseño evita que la fluidez técnica provoque delegación acrítica.
+                        </span>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- SLIDE 4: INTEGRACIÓN TECNOLÓGICA (5 CAPAS) -->
+            <section class="slide" id="slide-4">
+                <div class="slide-header">Integración Tecnológica y ASSURE</div>
+                
+                <p id="s4-instruction" class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-4 bg-white/50 px-4 py-1 rounded text-center">
+                    Pasa el mouse o haz clic en las capas inferiores para expandir
+                </p>
+
+                <div class="w-full flex flex-col items-center justify-between" style="min-height: 480px;">
+                    <!-- Zona Superior: Tarjetas Desplegadas -->
+                    <div class="expanded-zone" id="s4-expanded-zone">
+                        <!-- Aquí se moverán las tarjetas al hacer clic o hover -->
+                    </div>
+
+                    <!-- Zona Inferior: Stack original de tarjetas -->
+                    <div class="stack-zone" id="s4-stack-container">
+                        <div id="s4-status" class="opacity-0 transition-opacity duration-500 absolute top-[-50px] left-1/2 -translate-x-1/2 font-bold text-xs md:text-sm text-[var(--c-purple)] bg-white/95 backdrop-blur px-6 py-2.5 rounded-full shadow-md z-50 text-center w-full max-w-lg border border-purple-200">
+                            Modelos desplegados: integración tecnológica completa
+                        </div>
+
+                        <div id="s4-container" class="s4-perspective-container">
+                            <!-- LAS 5 CAPAS APILADAS AL INICIO -->
+                            <div class="tech-card stack-card stacked" id="c-assure" data-model="ASSURE" onmouseenter="handleCardClick('c-assure')" onclick="handleCardClick('c-assure')">
+                                <div class="layer-title">ASSURE</div>
+                                <div class="layer-subtitle" style="color: #64748B;">Orquestación</div>
+                                <div class="layer-phrase"><i class="fa-solid fa-quote-left opacity-50 mr-1 block mb-1"></i> Registro, retroalimentación y checkpoints</div>
+                            </div>
+
+                            <div class="tech-card stack-card stacked" id="c-picrat" data-model="PICRAT" onmouseenter="handleCardClick('c-picrat')" onclick="handleCardClick('c-picrat')">
+                                <div class="layer-title">PICRAT</div>
+                                <div class="layer-subtitle" style="color: var(--c-turquoise);">Agencia</div>
+                                <div class="layer-phrase"><i class="fa-solid fa-quote-left opacity-50 mr-1 block mb-1"></i> Agencia del estudiante</div>
+                            </div>
+
+                            <div class="tech-card stack-card stacked" id="c-samr" data-model="SAMR" onmouseenter="handleCardClick('c-samr')" onclick="handleCardClick('c-samr')">
+                                <div class="layer-title">SAMR</div>
+                                <div class="layer-subtitle" style="color: var(--c-orange);">Transformación</div>
+                                <div class="layer-phrase"><i class="fa-solid fa-quote-left opacity-50 mr-1 block mb-1"></i> Transformación de la tarea</div>
+                            </div>
+
+                            <div class="tech-card stack-card stacked" id="c-itpack" data-model="TPACK" onmouseenter="handleCardClick('c-itpack')" onclick="handleCardClick('c-itpack')">
+                                <div class="layer-title">iTPACK</div>
+                                <div class="layer-subtitle" style="color: var(--c-purple);">Ética IA</div>
+                                <div class="layer-phrase"><i class="fa-solid fa-quote-left opacity-50 mr-1 block mb-1"></i> Integración de la IA como agente</div>
+                            </div>
+
+                            <div class="tech-card stack-card stacked" id="c-tpack" data-model="BASE" onmouseenter="handleCardClick('c-tpack')" onclick="handleCardClick('c-tpack')">
+                                <div class="layer-title">TPACK</div>
+                                <div class="layer-subtitle" style="color: var(--c-blue);">Base Docente</div>
+                                <div class="layer-phrase"><i class="fa-solid fa-quote-left opacity-50 mr-1 block mb-1"></i> Saber integrado docente</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="s4-reset" onclick="resetCards()" class="opacity-0 pointer-events-none transition-opacity duration-300 bg-gray-800 hover:bg-black text-white font-bold py-2 px-6 rounded-full text-xs uppercase shadow-lg mt-4 z-50">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> Reiniciar capas
+                    </button>
+                </div>
+            </section>
+
+            <!-- SLIDE 5: MOTOR DIDÁCTICO (NUEVO ESTILO B&W TRANSPARENT GLASS) -->
+            <section class="slide" id="slide-5">
+                <div class="slide-header">Motor Didáctico (El viaje del usuario)</div>
+                
+                <div class="motor-carousel-wrapper" id="motor-carousel">
+                    
+                    <div class="motor-card theme-tecnologia flex flex-col items-center p-5 text-center" id="mc-1">
+                        <div class="w-16 h-16 rounded-full icon-glass-circle flex items-center justify-center text-3xl accent-color mb-4">
+                            <i class="fa-solid fa-power-off"></i>
+                        </div>
+                        <div class="font-bold text-[15px] mb-1">1. Activación</div>
+                        <div class="text-[11px] font-semibold mb-3">(15 min)</div>
+                        <div class="text-[10px] bw-label px-2 py-1.5 rounded w-full mb-3 font-bold uppercase tracking-wider text-center">ABP / Contexto</div>
+                        <div class="text-[11px] font-medium leading-snug">Presentación del caso y objetivos.</div>
+                    </div>
+
+                    <div class="motor-card theme-riesgo flex flex-col items-center p-5 text-center" id="mc-2">
+                        <div class="w-16 h-16 rounded-full icon-glass-circle flex items-center justify-center text-3xl accent-color mb-4">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div class="font-bold text-[15px] mb-1">ProHoc</div>
+                        <div class="text-[11px] font-bold mb-1">Postura Inicial</div>
+                        <div class="text-[11px] font-semibold mb-3">(10 min)</div>
+                        <div class="text-[10px] bw-label px-2 py-1.5 rounded w-full mb-3 font-bold uppercase tracking-wider text-center">Agencia Cognitiva</div>
+                        <div class="text-[11px] font-medium leading-snug">Tomar postura inicial antes de ver la IA.</div>
+                    </div>
+
+                    <div class="motor-card theme-teoria flex flex-col items-center p-5 text-center" id="mc-3">
+                        <div class="w-16 h-16 rounded-full icon-glass-circle flex items-center justify-center text-3xl accent-color mb-4">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="font-bold text-[15px] mb-1">Socrat-IA</div>
+                        <div class="text-[11px] font-semibold mb-3">(20 min)</div>
+                        <div class="text-[8px] bw-label px-1 py-1.5 rounded w-full mb-3 font-bold uppercase tracking-tight text-center">Socioconstructivismo</div>
+                        <div class="text-[11px] font-medium leading-snug">Interacción socrática y feedback.</div>
+                    </div>
+
+                    <div class="motor-card theme-friccion flex flex-col items-center p-5 text-center" id="mc-4">
+                        <div class="w-16 h-16 rounded-full icon-glass-circle flex items-center justify-center text-3xl accent-color mb-4">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="font-bold text-[15px] mb-1">Skepsia</div>
+                        <div class="text-[11px] font-bold mb-1">Fricción Cognitiva</div>
+                        <div class="text-[11px] font-semibold mb-3">(15 min)</div>
+                        <div class="text-[10px] bw-label px-2 py-1.5 rounded w-full mb-3 font-bold uppercase tracking-wider text-center">Metacognición</div>
+                        <div class="text-[11px] font-medium leading-snug">Validar/Rechazar con justificación.</div>
+                    </div>
+
+                    <div class="motor-card theme-metacognicion flex flex-col items-center p-5 text-center" id="mc-5">
+                        <div class="w-16 h-16 rounded-full icon-glass-circle flex items-center justify-center text-3xl accent-color mb-4">
+                            <i class="fa-solid fa-pen-nib"></i>
+                        </div>
+                        <div class="font-bold text-[15px] mb-1">Reformulatio</div>
+                        <div class="text-[11px] font-semibold mb-3">(10 min)</div>
+                        <div class="text-[10px] bw-label px-2 py-1.5 rounded w-full mb-3 font-bold uppercase tracking-wider text-center">Cognición Distribuida</div>
+                        <div class="text-[11px] font-medium leading-snug">Reescritura y comparación visible.</div>
+                    </div>
+
+                    <div class="motor-card theme-solucion flex flex-col items-center p-5 text-center" id="mc-6">
+                        <div class="w-16 h-16 rounded-full icon-glass-circle flex items-center justify-center text-3xl accent-color mb-4">
+                            <i class="fa-solid fa-landmark"></i>
+                        </div>
+                        <div class="font-bold text-[15px] mb-1">Civitas</div>
+                        <div class="text-[11px] font-semibold mb-3">(20 min)</div>
+                        <div class="text-[10px] bw-label px-2 py-1.5 rounded w-full mb-3 font-bold uppercase tracking-wider text-center">Educación Ciudadana</div>
+                        <div class="text-[11px] font-medium leading-snug">Transferencia Social y Cierre.</div>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- SLIDE 6: BUCLE CÍCLICO -->
+            <section class="slide" id="slide-6">
+                <div class="slide-header">Bucle de Retroalimentación</div>
+                
+                <div class="flex items-center justify-center gap-8 w-full max-w-6xl mt-4">
+                    
+                    <!-- Diagrama a la Izquierda -->
+                    <div class="relative w-[450px] h-[400px] flex-shrink-0 mx-auto lg:mx-0">
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 450 400">
+                            <path class="flow-line" d="M 125 80 Q 225 30 325 80" fill="none" style="stroke: #2FA4E7;" stroke-width="3" marker-end="url(#arrow-blue)"/>
+                            <path class="flow-line" d="M 375 130 Q 425 200 375 270" fill="none" style="stroke: #F2B36D;" stroke-width="3" marker-end="url(#arrow-orange)"/>
+                            <path class="flow-line" d="M 325 320 Q 225 370 125 320" fill="none" style="stroke: #83DCCB;" stroke-width="3" marker-end="url(#arrow-turq)"/>
+                            <path class="flow-line" d="M 75 270 Q 25 200 75 130" fill="none" style="stroke: #6B5CA5;" stroke-width="3" marker-end="url(#arrow-purple)"/>
+                            <defs>
+                                <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L8,4 z" fill="#2FA4E7" /></marker>
+                                <marker id="arrow-orange" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L8,4 z" fill="#F2B36D" /></marker>
+                                <marker id="arrow-turq" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L8,4 z" fill="#83DCCB" /></marker>
+                                <marker id="arrow-purple" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L8,4 z" fill="#6B5CA5" /></marker>
+                            </defs>
+                        </svg>
+
+                        <!-- Nodos -->
+                        <div class="absolute top-0 left-1/2 -translate-x-1/2 doctoral-card theme-tecnologia w-40 p-4 text-center">
+                            <div class="accent-line-top bg-[#2FA4E7]"></div>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">1. Contexto</span><br>
+                            <span class="font-bold text-sm text-[#2FA4E7]">Dilema ABP</span>
+                        </div>
+
+                        <div class="absolute top-1/2 right-0 -translate-y-1/2 doctoral-card theme-friccion w-40 p-4 text-center">
+                            <div class="accent-line-top bg-[#F2B36D]"></div>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">2. Fricción</span><br>
+                            <span class="font-bold text-sm text-[#F2B36D]">Skepsia / Ref.</span>
+                        </div>
+
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 doctoral-card theme-metacognicion w-40 p-4 text-center">
+                            <div class="accent-line-top bg-[#83DCCB]"></div>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">3. Impacto</span><br>
+                            <span class="font-bold text-sm text-[#83DCCB]">Civitas / Porta.</span>
+                        </div>
+
+                        <div class="absolute top-1/2 left-0 -translate-y-1/2 doctoral-card theme-teoria w-40 p-4 text-center">
+                            <div class="accent-line-top bg-[#6B5CA5]"></div>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">4. Docente</span><br>
+                            <span class="font-bold text-sm text-[#6B5CA5]">Ajuste / Eval.</span>
+                        </div>
+
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-44 text-center bg-white p-4 rounded-[24px] shadow-lg border border-[rgba(23,25,29,0.08)]">
+                            <i class="fa-solid fa-rotate text-[#2FA4E7] mb-1 text-xl"></i>
+                            <div class="text-[9px] font-bold uppercase tracking-widest text-[#17191D] leading-tight">
+                                El portafolio informa al Docente, quien retroalimenta el ABP.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fichas de Detalle a la Derecha -->
+                    <div class="flex flex-col gap-3 w-[450px] flex-shrink-0 max-h-[450px] overflow-y-auto pr-2">
+                        
+                        <div class="doctoral-card theme-tecnologia p-5 text-left relative pl-6">
+                            <div class="accent-line-left bg-[#2FA4E7]"></div>
+                            <h4 class="font-bold text-sm text-[#2FA4E7] mb-1 uppercase"><i class="fa-solid fa-book-open mr-1"></i> 1. ABP con casos mal estructurados</h4>
+                            <ul class="text-[11px] text-[#4B5563] font-semibold space-y-1 list-disc pl-4 marker:text-[#2FA4E7]">
+                                <li>Dilemas entre bienes legítimos. Sin respuesta única.</li>
+                                <li>Tipologías: convivencia, representación, ciudadanía digital, territorio e integridad.</li>
+                            </ul>
+                        </div>
+
+                        <div class="doctoral-card theme-friccion p-5 text-left relative pl-6">
+                            <div class="accent-line-left bg-[#F2B36D]"></div>
+                            <h4 class="font-bold text-sm text-[#F2B36D] mb-1 uppercase"><i class="fa-solid fa-shield-halved mr-1"></i> 2. Skepsia (Fricción Cognitiva)</h4>
+                            <p class="text-[11px] text-[#4B5563] font-semibold leading-tight">Obliga a tomar postura y evita la aceptación acrítica. Funciona como un monitoreo metacognitivo continuo del propio razonamiento.</p>
+                        </div>
+
+                        <div class="doctoral-card theme-metacognicion p-5 text-left relative pl-6">
+                            <div class="accent-line-left bg-[#83DCCB]"></div>
+                            <h4 class="font-bold text-sm text-[#83DCCB] mb-1 uppercase"><i class="fa-solid fa-landmark mr-1"></i> 3. Civitas e Impacto</h4>
+                            <p class="text-[11px] text-[#4B5563] font-semibold leading-tight">Conecta la decisión individual con el bien común. Evita que la opinión se exprese sin asumir responsabilidad pública.</p>
+                        </div>
+
+                        <div class="doctoral-card theme-teoria p-5 text-left relative pl-6">
+                            <div class="accent-line-left bg-[#6B5CA5]"></div>
+                            <h4 class="font-bold text-sm text-[#6B5CA5] mb-1 uppercase"><i class="fa-solid fa-chalkboard-user mr-1"></i> 4. Evaluación y Ética (Docente)</h4>
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-800 mb-1 border-b pb-1">Rúbrica (D1-D6)</p>
+                                    <ul class="text-[10px] text-gray-600 font-semibold space-y-0.5">
+                                        <li>D1: Escritura/Oralidad</li><li>D2: Ciudadanía</li><li>D3: Evidencia</li><li>D4: Pens. Crítico</li><li>D5: Convivencia</li><li>D6: Metacognición</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-800 mb-1 border-b pb-1">Ética y DUA</p>
+                                    <ul class="text-[10px] text-gray-600 font-semibold space-y-0.5">
+                                        <li>No validar sin justificar.</li><li>Proteger privacidad.</li><li>Advertir sesgos.</li><li>Múltiples formas de acción.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 7: ARQUITECTURA TÉCNICA -->
+            <section class="slide" id="slide-7">
+                <div class="slide-header">Arquitectura Técnica</div>
+                <div class="flex items-center justify-center w-full max-w-4xl h-[350px]">
+                    <div class="relative w-full h-full flex items-center justify-center">
+                        <div class="absolute h-px w-64 bg-gray-300 top-[30%] right-[30%] rotate-45"></div>
+                        <div class="absolute h-px w-64 bg-gray-300 top-[30%] left-[30%] -rotate-45"></div>
+                        <div class="absolute w-px h-32 bg-gray-300 top-1/2 left-1/2"></div>
+                        
+                        <!-- Central Node: Fondo claro y texto oscuro (sin tarjetas negras) -->
+                        <div class="absolute z-10 w-44 h-44 bg-white rounded-full flex flex-col items-center justify-center text-[#17191D] shadow-2xl border-4 border-[#2FA4E7]">
+                            <i class="fa-brands fa-python text-5xl mb-2 text-[#2FA4E7]"></i>
+                            <span class="font-bold text-base text-[#17191D]">Python &</span>
+                            <span class="font-bold text-base text-[#4B5563]">Streamlit</span>
+                        </div>
+
+                        <!-- External Nodes: Doctoral Cards -->
+                        <div class="absolute top-[10%] left-[10%] w-56 doctoral-card theme-teoria p-5 text-center">
+                            <div class="accent-line-top bg-[#6B5CA5]"></div>
+                            <i class="fa-solid fa-microphone-lines text-3xl text-[#6B5CA5] mb-2"></i>
+                            <h4 class="font-bold text-sm text-[#17191D]">Interacción Bimodal</h4>
+                            <p class="text-xs text-[#4B5563] font-semibold mt-1">Soporte fluido para texto y voz.</p>
+                        </div>
+
+                        <div class="absolute top-[10%] right-[10%] w-56 doctoral-card theme-friccion p-5 text-center">
+                            <div class="accent-line-top bg-[#F2B36D]"></div>
+                            <i class="fa-solid fa-layer-group text-3xl text-[#F2B36D] mb-2"></i>
+                            <h4 class="font-bold text-sm text-[#17191D]">30 Escenarios Base</h4>
+                            <p class="text-xs text-[#4B5563] font-semibold mt-1">Banco de dilemas sin repetición.</p>
+                        </div>
+
+                        <div class="absolute bottom-[0%] left-1/2 -translate-x-1/2 w-64 doctoral-card theme-metacognicion p-5 text-center">
+                            <div class="accent-line-top bg-[#83DCCB]"></div>
+                            <i class="fa-solid fa-shield-halved text-3xl text-[#83DCCB] mb-2"></i>
+                            <h4 class="font-bold text-sm text-[#17191D]">Seguridad y DUA</h4>
+                            <p class="text-xs text-[#4B5563] font-semibold mt-1">Accesibilidad y resguardo de la privacidad.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 8: APORTE ORIGINAL (CARRUSEL 3D) -->
+            <section class="slide" id="slide-8">
+                <div class="slide-header">Aporte Original de CiudadanIA</div>
+                
+                <div class="aporte-carousel-wrapper" id="aporte-carousel">
+                    
+                    <div class="aporte-card" id="ap-1">
+                        <i class="fa-solid fa-robot icon-c"></i>
+                        <h4>Integración Socrática</h4>
+                        <p>Integra IA generativa actuando exclusivamente mediante mediación socrática.</p>
+                    </div>
+
+                    <div class="aporte-card" id="ap-2">
+                        <i class="fa-solid fa-brain icon-c"></i>
+                        <h4>Principio de Diseño</h4>
+                        <p>Introduce la fricción cognitiva como mecanismo para evitar el sesgo de automatización.</p>
+                    </div>
+
+                    <div class="aporte-card" id="ap-3">
+                        <i class="fa-solid fa-eye icon-c"></i>
+                        <h4>Transformación Visible</h4>
+                        <p>Hace explícita y observable la transformación argumentativa entre versiones.</p>
+                    </div>
+
+                    <div class="aporte-card" id="ap-4">
+                        <i class="fa-solid fa-link icon-c"></i>
+                        <h4>Triple Articulación</h4>
+                        <p>Articula orgánicamente ciudadanía democrática, escritura y metacognición.</p>
+                    </div>
+
+                    <div class="aporte-card" id="ap-5">
+                        <i class="fa-solid fa-scale-balanced icon-c"></i>
+                        <h4>Agencia y Juicio</h4>
+                        <p>Preserva la agencia intelectual estudiantil y amplifica el juicio docente.</p>
+                    </div>
+
+                </div>
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mt-2 bg-white/50 px-4 py-1 rounded">Mueve el mouse sobre el área para enfocar los aportes o haz clic en las tarjetas</p>
+            </section>
+
+            <!-- SLIDE 9: LIMITACIONES -->
+            <section class="slide" id="slide-9">
+                <div class="slide-header">Limitaciones y Resguardos</div>
+                
+                <div class="limitations-grid w-full max-w-4xl mt-4">
+                    
+                    <!-- Tarjeta 1 -->
+                    <div class="limitation-hotspot">
+                        <div class="doctoral-card theme-riesgo limitation-card flex items-start gap-4 p-5 relative pl-6">
+                            <div class="accent-line-left bg-[#D94141]"></div>
+                            <i class="fa-solid fa-wifi text-2xl text-[#D94141] mt-1 limitation-icon"></i>
+                            <div><h4 class="font-bold text-sm text-[#17191D]">Conectividad Desigual</h4><p class="text-[11px] text-[#4B5563] font-semibold mt-1">Dependencia de infraestructura en aulas.</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 2 -->
+                    <div class="limitation-hotspot">
+                        <div class="doctoral-card theme-friccion limitation-card flex items-start gap-4 p-5 relative pl-6">
+                            <div class="accent-line-left bg-[#F2B36D]"></div>
+                            <i class="fa-solid fa-pen-slash text-2xl text-[#F2B36D] mt-1 limitation-icon"></i>
+                            <div><h4 class="font-bold text-sm text-[#17191D]">Brechas de Escritura</h4><p class="text-[11px] text-[#4B5563] font-semibold mt-1">Dificultad inicial para articular argumentos.</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 3 -->
+                    <div class="limitation-hotspot">
+                        <div class="doctoral-card theme-metacognicion limitation-card flex items-start gap-4 p-5 relative pl-6">
+                            <div class="accent-line-left bg-[#83DCCB]"></div>
+                            <i class="fa-solid fa-scale-unbalanced text-2xl text-[#83DCCB] mt-1 limitation-icon"></i>
+                            <div><h4 class="font-bold text-sm text-[#17191D]">Sesgos Algorítmicos</h4><p class="text-[11px] text-[#4B5563] font-semibold mt-1">Riesgo inherente de parcialidad de la IA.</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 4 -->
+                    <div class="limitation-hotspot">
+                        <div class="doctoral-card theme-teoria limitation-card flex items-start gap-4 p-5 relative pl-6">
+                            <div class="accent-line-left bg-[#6B5CA5]"></div>
+                            <i class="fa-solid fa-battery-quarter text-2xl text-[#6B5CA5] mt-1 limitation-icon"></i>
+                            <div><h4 class="font-bold text-sm text-[#17191D]">Sobrecarga Digital</h4><p class="text-[11px] text-[#4B5563] font-semibold mt-1">Fatiga por uso continuo de pantallas.</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 5 -->
+                    <div class="limitation-hotspot">
+                        <div class="doctoral-card bg-[#FAFBFC] limitation-card flex items-start gap-4 p-5 relative pl-6">
+                            <div class="accent-line-left bg-[#4B5563]"></div>
+                            <i class="fa-solid fa-masks-theater text-2xl text-[#4B5563] mt-1 limitation-icon"></i>
+                            <div><h4 class="font-bold text-sm text-[#17191D]">Uso Cosmético</h4><p class="text-[11px] text-[#4B5563] font-semibold mt-1">Aplicar la IA sin profundidad pedagógica.</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 6 -->
+                    <div class="limitation-hotspot">
+                        <div class="doctoral-card theme-tecnologia limitation-card flex items-start gap-4 p-5 relative pl-6">
+                            <div class="accent-line-left bg-[#2FA4E7]"></div>
+                            <i class="fa-solid fa-repeat text-2xl text-[#2FA4E7] mt-1 limitation-icon"></i>
+                            <div><h4 class="font-bold text-sm text-[#17191D]">Habituación a Fricción</h4><p class="text-[11px] text-[#4B5563] font-semibold mt-1">Mecanizar el paso por los checkpoints.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SLIDE 10: PROYECCIÓN -->
+            <section class="slide" id="slide-10">
+                <div class="slide-header">Proyección Investigativa</div>
+                
+                <div class="w-full max-w-5xl relative mt-16 px-4">
+                    <!-- Línea del tiempo horizontal en pantallas grandes -->
+                    <div class="absolute top-1/2 left-10 right-10 h-1 bg-[var(--c-blue)] -translate-y-1/2 z-0 rounded-full opacity-50"></div>
+                    
+                    <div class="flex justify-between relative z-10">
+                        <div class="doctoral-card theme-tecnologia flex flex-col items-center w-40 text-center p-4 relative hover:scale-110 transition-transform">
+                            <div class="accent-line-top bg-[#2FA4E7]"></div>
+                            <i class="fa-solid fa-magnifying-glass text-2xl text-[#2FA4E7] mb-2"></i>
+                            <h4 class="font-bold text-[11px] text-[#17191D] mb-1">Calidad Epistémica</h4>
+                            <p class="text-[10px] text-[#4B5563] font-semibold leading-tight">Análisis cualitativo y cuantitativo de justificaciones.</p>
+                        </div>
+
+                        <div class="doctoral-card theme-teoria flex flex-col items-center w-40 text-center p-4 relative hover:scale-110 transition-transform mt-0 md:-mt-8">
+                            <div class="accent-line-top bg-[#6B5CA5]"></div>
+                            <i class="fa-solid fa-code-compare text-2xl text-[#6B5CA5] mb-2"></i>
+                            <h4 class="font-bold text-[11px] text-[#17191D] mb-1">Cambios Argumentativos</h4>
+                            <p class="text-[10px] text-[#4B5563] font-semibold leading-tight">Comparación visible del crecimiento argumentativo.</p>
+                        </div>
+
+                        <div class="doctoral-card theme-friccion flex flex-col items-center w-40 text-center p-4 relative hover:scale-110 transition-transform">
+                            <div class="accent-line-top bg-[#F2B36D]"></div>
+                            <i class="fa-solid fa-graduation-cap text-2xl text-[#F2B36D] mb-2"></i>
+                            <h4 class="font-bold text-[11px] text-[#17191D] mb-1">Transferencia Didáctica</h4>
+                            <p class="text-[10px] text-[#4B5563] font-semibold leading-tight">Evaluación del impacto en dilemas escolares reales.</p>
+                        </div>
+
+                        <div class="doctoral-card theme-metacognicion flex flex-col items-center w-40 text-center p-4 relative hover:scale-110 transition-transform mt-0 md:-mt-8">
+                            <div class="accent-line-top bg-[#83DCCB]"></div>
+                            <i class="fa-solid fa-chart-line text-2xl text-[#83DCCB] mb-2"></i>
+                            <h4 class="font-bold text-[11px] text-[#17191D] mb-1">Reducción de Sesgo</h4>
+                            <p class="text-[10px] text-[#4B5563] font-semibold leading-tight">Efecto de la fricción cognitiva en la autonomía.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="bottom-footer">
+            <div class="footer-text">
+                Por: Jorge Cuevas Aburto - Asignatura: Tecnología y modelos didácticos - Doctorado educación 2026-1 - UdeC
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- 1. Navegación por Diapositivas (Scroll-Snap y Actualización del Menú) ---
+        const container = document.getElementById('slides-container');
+        const navButtons = document.querySelectorAll('#main-nav .menu-btn');
+        const slides = document.querySelectorAll('.slide');
+
+        function scrollToSlide(slideId) {
+            const targetSlide = document.getElementById(slideId);
+            if (container && targetSlide) {
+                container.scrollTo({
+                    top: targetSlide.offsetTop - container.offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        container.addEventListener('scroll', () => {
+            let currentSlideId = 'slide-0';
+            let minDiff = Infinity;
+            const containerTop = container.getBoundingClientRect().top;
+            
+            slides.forEach(slide => {
+                const diff = Math.abs(slide.getBoundingClientRect().top - containerTop);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    currentSlideId = slide.id;
+                }
+            });
+
+            navButtons.forEach(btn => {
+                const onclickStr = btn.getAttribute('onclick');
+                if (onclickStr && onclickStr.includes(currentSlideId)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Reiniciar tarjetas si se cambia de slide a otra diferente de slide-4
+            if (currentSlideId !== 'slide-4') {
+                const expandedCards = document.querySelectorAll('#s4-expanded-zone .stack-card');
+                if (expandedCards.length > 0) {
+                    resetCards();
+                }
+            }
+        });
+
+        // --- 2. Diapositiva 4: Capas de Integración Tecnológica (Interactividad 3D) ---
+        function handleCardClick(cardId) {
+            const card = document.getElementById(cardId);
+            if (card.classList.contains('is-expanded')) return;
+            
+            // En pantallas pequeñas no aplicamos la transición FLIP a través de contenedores
+            if (window.innerWidth <= 768) {
+                card.classList.remove('stacked');
+                card.classList.add('is-expanded');
+                const phrase = card.querySelector('.layer-phrase');
+                phrase.style.maxHeight = '100px';
+                phrase.style.opacity = '1';
+                phrase.style.marginTop = '8px';
+                
+                // Moverlo a la zona superior
+                document.getElementById('s4-expanded-zone').appendChild(card);
+                updateStackOpacity();
+                updateStatusText();
+                return;
+            }
+
+            const expandedZone = document.getElementById('s4-expanded-zone');
+            
+            // 1. First (Posición en el stack)
+            const first = card.getBoundingClientRect();
+            
+            // 2. Modificar clases y mover en DOM
+            card.classList.remove('stacked');
+            card.classList.add('is-expanded');
+            
+            expandedZone.appendChild(card);
+            
+            // 3. Last (Posición en la zona superior expandida)
+            const last = card.getBoundingClientRect();
+            
+            // 4. Invert (Transformación inversa para iniciar el movimiento desde la posición original)
+            const dx = first.left - last.left;
+            const dy = first.top - last.top;
+            
+            const stackedTransforms = {
+                'c-tpack': 'rotateX(60deg) rotateZ(-45deg) translateZ(0px) translate(-30px, 30px)',
+                'c-itpack': 'rotateX(60deg) rotateZ(-45deg) translateZ(40px) translate(-10px, 10px)',
+                'c-samr': 'rotateX(60deg) rotateZ(-45deg) translateZ(80px) translate(10px, -10px)',
+                'c-picrat': 'rotateX(60deg) rotateZ(-45deg) translateZ(120px) translate(30px, -30px)',
+                'c-assure': 'rotateX(60deg) rotateZ(-45deg) translateZ(160px) translate(50px, -50px)'
+            };
+            
+            const initialTransform = stackedTransforms[cardId];
+            
+            card.style.transition = 'none';
+            card.style.transform = `translate(${dx}px, ${dy}px) ${initialTransform}`;
+            
+            // Forzar layout reflow
+            card.offsetHeight;
+            
+            // 5. Play (Efecto de transición fluida)
+            card.classList.add('is-animating');
+            requestAnimationFrame(() => {
+                card.style.transition = 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.6s, color 0.6s, box-shadow 0.6s, border-color 0.6s';
+                card.style.transform = ''; // Vuelve al estado .is-expanded (scale 1.2, sin rotación 3D)
+                
+                const phrase = card.querySelector('.layer-phrase');
+                phrase.style.maxHeight = '100px';
+                phrase.style.opacity = '1';
+                phrase.style.marginTop = '8px';
+            });
+            setTimeout(() => {
+                card.classList.remove('is-animating');
+            }, 600);
+            
+            updateStackOpacity();
+            updateStatusText();
+        }
+        
+        function updateStackOpacity() {
+            const stackCards = document.querySelectorAll('#s4-stack-container .stack-card');
+            const expandedCards = document.querySelectorAll('#s4-expanded-zone .stack-card');
+            
+            // Limpiar opacidad en las tarjetas expandidas arriba para evitar translucidez
+            expandedCards.forEach(card => {
+                card.style.opacity = '';
+            });
+            
+            if (expandedCards.length > 0) {
+                stackCards.forEach(card => {
+                    card.style.opacity = '0.45';
+                });
+            } else {
+                stackCards.forEach(card => {
+                    card.style.opacity = '';
+                });
+            }
+        }
+
+        function updateStatusText() {
+            const expandedCards = document.querySelectorAll('#s4-expanded-zone .stack-card');
+            const statusDiv = document.getElementById('s4-status');
+            const resetBtn = document.getElementById('s4-reset');
+            
+            if (expandedCards.length === 5) {
+                // Eliminar la repetición de abajo: ocultar el statusDiv
+                statusDiv.classList.remove('opacity-100');
+                statusDiv.classList.add('opacity-0');
+                document.getElementById('s4-instruction').innerHTML = 'Modelos de integración tecnológica';
+            } else if (expandedCards.length > 0) {
+                statusDiv.innerHTML = `<i class="fa-solid fa-info-circle mr-2"></i> Modelos expandidos: ${expandedCards.length} de 5`;
+                statusDiv.classList.remove('opacity-0');
+                statusDiv.classList.add('opacity-100');
+                document.getElementById('s4-instruction').innerHTML = 'Haz clic en las capas inferiores para expandir';
+            } else {
+                statusDiv.classList.remove('opacity-100');
+                statusDiv.classList.add('opacity-0');
+                document.getElementById('s4-instruction').innerHTML = 'Haz clic en las capas inferiores para expandir';
+            }
+            
+            if (expandedCards.length > 0) {
+                resetBtn.classList.remove('opacity-0', 'pointer-events-none');
+                resetBtn.classList.add('opacity-100');
+            } else {
+                resetBtn.classList.remove('opacity-100');
+                resetBtn.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+        
+        function resetCards() {
+            const stackZone = document.getElementById('s4-container');
+            const expandedZone = document.getElementById('s4-expanded-zone');
+            const cards = Array.from(document.querySelectorAll('.stack-card'));
+            
+            // Orden original en el que deben devolverse
+            const originalOrder = ['c-tpack', 'c-itpack', 'c-samr', 'c-picrat', 'c-assure'];
+            cards.sort((a, b) => originalOrder.indexOf(a.id) - originalOrder.indexOf(b.id));
+            
+            cards.forEach(card => {
+                if (card.classList.contains('is-expanded')) {
+                    if (window.innerWidth <= 768) {
+                        card.classList.remove('is-expanded');
+                        card.classList.add('stacked');
+                        const phrase = card.querySelector('.layer-phrase');
+                        phrase.style.maxHeight = '';
+                        phrase.style.opacity = '';
+                        phrase.style.marginTop = '';
+                        stackZone.appendChild(card);
+                        return;
+                    }
+
+                    // First (posición en la zona superior)
+                    const first = card.getBoundingClientRect();
+                    
+                    // Mover de vuelta a stackZone
+                    card.classList.remove('is-expanded');
+                    card.classList.add('stacked');
+                    
+                    const phrase = card.querySelector('.layer-phrase');
+                    phrase.style.maxHeight = '';
+                    phrase.style.opacity = '';
+                    phrase.style.marginTop = '';
+                    
+                    stackZone.appendChild(card);
+                    
+                    // Last (posición en el stack 3D)
+                    const last = card.getBoundingClientRect();
+                    
+                    // Invert
+                    const dx = first.left - last.left;
+                    const dy = first.top - last.top;
+                    
+                    card.style.transition = 'none';
+                    card.style.transform = `translate(${dx}px, ${dy}px) scale(1.2)`;
+                    
+                    card.offsetHeight; // Reflow
+                    
+                    requestAnimationFrame(() => {
+                        card.style.transition = 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.6s, color 0.6s, box-shadow 0.6s, border-color 0.6s';
+                        card.style.transform = ''; // Vuelve a su estado CSS .stacked
+                    });
+                }
+            });
+            
+            setTimeout(() => {
+                updateStackOpacity();
+                updateStatusText();
+            }, 600);
+        }
+
+        // --- 3. Diapositiva 8: Carrusel 3D de Aportes Originales ---
+        let carouselIndex = 0;
+        const carouselCards = document.querySelectorAll('.aporte-card');
+        const totalCarouselCards = carouselCards.length;
+
+        function updateCarousel() {
+            carouselCards.forEach((card, index) => {
+                card.classList.remove('active', 'prev', 'next', 'hidden-left', 'hidden-right');
+                
+                // Calcular posición modular
+                const diff = (index - carouselIndex + totalCarouselCards) % totalCarouselCards;
+                
+                if (diff === 0) {
+                    card.classList.add('active');
+                } else if (diff === 1) {
+                    card.classList.add('next');
+                } else if (diff === totalCarouselCards - 1) {
+                    card.classList.add('prev');
+                } else if (diff > 1 && diff <= totalCarouselCards / 2) {
+                    card.classList.add('hidden-right');
+                } else {
+                    card.classList.add('hidden-left');
+                }
+            });
+        }
+
+        function nextCarouselCard() {
+            carouselIndex = (carouselIndex + 1) % totalCarouselCards;
+            updateCarousel();
+        }
+
+        function prevCarouselCard() {
+            carouselIndex = (carouselIndex - 1 + totalCarouselCards) % totalCarouselCards;
+            updateCarousel();
+        }
+
+        // Timer de auto-rotación
+        let carouselInterval = setInterval(nextCarouselCard, 4000);
+
+        function resetCarouselTimer() {
+            clearInterval(carouselInterval);
+            carouselInterval = setInterval(nextCarouselCard, 4000);
+        }
+
+        // Asignar listeners a las tarjetas del carrusel
+        carouselCards.forEach((card) => {
+            card.addEventListener('click', (e) => {
+                if (card.classList.contains('next')) {
+                    nextCarouselCard();
+                    resetCarouselTimer();
+                } else if (card.classList.contains('prev')) {
+                    prevCarouselCard();
+                    resetCarouselTimer();
+                }
+            });
+
+            card.addEventListener('mouseenter', () => {
+                clearInterval(carouselInterval);
+            });
+
+            card.addEventListener('mouseleave', () => {
+                resetCarouselTimer();
+            });
+        });
+
+        // Inicializar carrusel
+        updateCarousel();
+
+        // --- 4. Diapositiva 5: Carrusel 3D de Motor Didáctico ---
+        let motorIndex = 0;
+        const motorCards = document.querySelectorAll('.motor-card');
+        const totalMotorCards = motorCards.length;
+
+        function updateMotorCarousel() {
+            motorCards.forEach((card, index) => {
+                card.classList.remove('active', 'prev', 'next', 'prev-far', 'next-far', 'hidden');
+                
+                const diff = (index - motorIndex + totalMotorCards) % totalMotorCards;
+                
+                if (diff === 0) {
+                    card.classList.add('active');
+                } else if (diff === 1) {
+                    card.classList.add('next');
+                } else if (diff === 2) {
+                    card.classList.add('next-far');
+                } else if (diff === totalMotorCards - 1) {
+                    card.classList.add('prev');
+                } else if (diff === totalMotorCards - 2) {
+                    card.classList.add('prev-far');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        function nextMotorCard() {
+            motorIndex = (motorIndex + 1) % totalMotorCards;
+            updateMotorCarousel();
+        }
+
+        function prevMotorCard() {
+            motorIndex = (motorIndex - 1 + totalMotorCards) % totalMotorCards;
+            updateMotorCarousel();
+        }
+
+        let motorInterval = setInterval(nextMotorCard, 4000);
+
+        function resetMotorTimer() {
+            clearInterval(motorInterval);
+            motorInterval = setInterval(nextMotorCard, 4000);
+        }
+
+        motorCards.forEach((card) => {
+            card.addEventListener('click', (e) => {
+                if (card.classList.contains('next') || card.classList.contains('next-far')) {
+                    nextMotorCard();
+                    resetMotorTimer();
+                } else if (card.classList.contains('prev') || card.classList.contains('prev-far')) {
+                    prevMotorCard();
+                    resetMotorTimer();
+                }
+            });
+
+            card.addEventListener('mouseenter', () => {
+                clearInterval(motorInterval);
+            });
+
+            card.addEventListener('mouseleave', () => {
+                resetMotorTimer();
+            });
+        });
+
+        // Inicializar carrusel motor
+        updateMotorCarousel();
+
+        // Control de click/touch para hotspots de limitaciones en dispositivos móviles
+        document.querySelectorAll('.limitation-hotspot').forEach((hotspot) => {
+            hotspot.addEventListener('click', (e) => {
+                // Alternar estado activo en esta tarjeta
+                const isActive = hotspot.classList.contains('is-active');
+                
+                // Desactivar todas las demás tarjetas
+                document.querySelectorAll('.limitation-hotspot').forEach((h) => {
+                    h.classList.remove('is-active');
+                });
+                
+                if (!isActive) {
+                    hotspot.classList.add('is-active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
